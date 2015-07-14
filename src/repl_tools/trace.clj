@@ -23,19 +23,19 @@
 ;; e.g.
 ;; tail -n 1000 log/trace.log | grep 'some-function' | jq '{fname, args, value}' | less -S
 
-(defn current-hour []
+(defn- current-hour []
   (.get (java.util.Calendar/getInstance) java.util.Calendar/HOUR_OF_DAY))
 
-(defn date-hour-format [date]
+(defn- date-hour-format [date]
   (format/unparse (format/formatters :date-hour) (coerce/from-date date)))
 
-(defn new-log [_log path]
+(defn- new-log [_log path]
   {
    :path path
    :hour (current-hour)
    :writer (clojure.java.io/writer #spy/d (str path "/trace-" (date-hour-format (java.util.Date.)) ".log") :append true)})
 
-(defn close-log [log]
+(defn- close-log [log]
   (when (not= log ::no-log)
     (.close (:writer log)))
   ::no-log)
@@ -47,25 +47,25 @@
                            (stacktrace/print-cause-trace e)
                            (prn))))
 
-(defn make-json-friendly* [[key value]]
+(defn- make-json-friendly* [[key value]]
   [(name key)
    (if (string? value) value (pr-str value))])
 
 (def make-json-friendly (memoize make-json-friendly*))
 
-(defn loggable-str [data]
+(defn- loggable-str [data]
   (str
    (json/write-str
     (->> data (map make-json-friendly) (into {})))
    "\n"))
 
-(defn date-hour-format [date]
+(defn- date-hour-format [date]
   (format/unparse (format/formatters :date-hour) (coerce/from-date date)))
 
-(defn iso8601-date [date]
+(defn- iso8601-date [date]
   (format/unparse (format/formatters :date-time) (coerce/from-date date)))
 
-(defn update-writer [log]
+(defn- update-writer [log]
   (let [hour (current-hour)]
     (if (= (:hour log) hour)
       log
@@ -73,7 +73,7 @@
         (close-log log)
         (new-log nil (:path log))))))
 
-(defn write [log data]
+(defn- write [log data]
   (let [new-log (update-writer log)
         writer (:writer new-log)
 
@@ -84,11 +84,11 @@
     (.flush writer)
     new-log))
 
-(defn custom-log-sink
+(defn- custom-log-sink
   [state]
   (send-off log write state))
 
-(defn build-sink []
+(defn- build-sink []
   (when-not (contains? @p/sinks :log)
     (p/add-sink :log custom-log-sink)
     (p/subscribe #{:probe/fn-exit} :log)
@@ -104,10 +104,10 @@
         (filter (comp fn? var-get wrap/as-var))
         (map p/unprobe-fn!))))
 
-(defn unprobe-ns-all! [ns]
+(defn- unprobe-ns-all! [ns]
   (unprobe-var-fns (keys (ns-interns ns))))
 
-(defn matching-namespaces [prefix namespaces]
+(defn- matching-namespaces [prefix namespaces]
   (let [regex (re-pattern (str "^" prefix))]
     (->> namespaces
          (map #(.name %))
