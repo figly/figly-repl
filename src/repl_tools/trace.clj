@@ -129,16 +129,18 @@
       (unprobe-ns-all! ns-sym))))
 
 (defn trace-all
-    "Traces all functions in a namespace prefix.
-   Example: (radiator-web.system-trace/trace-all 'my-namespace \"log\")"
+  "Traces all functions in a namespace prefix.
+  Example: (radiator-web.system-trace/trace-all 'my-namespace \"log\")"
     [prefix path]
     (untrace-all prefix)
     (send log new-log path)
     (build-sink)
-
-    (doseq [ns-sym (matching-namespaces prefix (all-ns))]
-      (println "Tracing" ns-sym)
-      ;; Probe has a bug where you cannot instrument a namespace unless
-      ;; you are already in it. https://github.com/VitalLabs/probe/issues/9
-      (binding [*ns* ns-sym]
-        (p/probe-ns-all! ns-sym))))
+    (let [namespaces (matching-namespaces prefix (all-ns))]
+      (if-not (seq namespaces)
+        (println "No matching namespaces found.")
+        (doseq [ns-sym namespaces]
+          (println "Tracing" ns-sym)
+          ;; Probe has a bug where you cannot instrument a namespace unless
+          ;; you are already in it. https://github.com/VitalLabs/probe/issues/9
+          (binding [*ns* ns-sym]
+            (p/probe-ns-all! ns-sym))))))
