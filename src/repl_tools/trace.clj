@@ -29,6 +29,9 @@
 (defn- date-hour-format [date]
   (format/unparse (format/formatters :date-hour) (coerce/from-date date)))
 
+(defn- iso8601-date [date]
+  (format/unparse (format/formatters :date-time) (coerce/from-date date)))
+
 (defn- new-log [_log path]
   {
    :path path
@@ -58,12 +61,6 @@
    (json/write-str
     (->> data (map make-json-friendly) (into {})))
    "\n"))
-
-(defn- date-hour-format [date]
-  (format/unparse (format/formatters :date-hour) (coerce/from-date date)))
-
-(defn- iso8601-date [date]
-  (format/unparse (format/formatters :date-time) (coerce/from-date date)))
 
 (defn- update-writer [log]
   (let [hour (current-hour)]
