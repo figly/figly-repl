@@ -33,7 +33,7 @@
   {
    :path path
    :hour (current-hour)
-   :writer (clojure.java.io/writer #spy/d (str path "/trace-" (date-hour-format (java.util.Date.)) ".log") :append true)})
+   :writer (clojure.java.io/writer (str path "/trace-" (date-hour-format (java.util.Date.)) ".log") :append true)})
 
 (defn- close-log [log]
   (when (not= log ::no-log)
