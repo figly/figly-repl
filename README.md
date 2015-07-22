@@ -11,6 +11,7 @@ Instrument every function call in a namespace so that invoking it will log the a
 You can then inspect the log with `grep` or push logs to a service like Elasticsearch (which you can then query with Kibana or Graylog2)
 
 ```
+  (require '[repl-tools.trace :as trace])
   (trace/trace-all 'mynamespace "log")
 ```
 
